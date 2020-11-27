@@ -8,7 +8,7 @@
 #'
 #'@param subs an optional vector specifying a subset of data to be used
 #'
-#'@return a list of length 5 containing the coefficients of the model, residuals, fitted values, rank of the fitted model, the residual degrees of freedom, and the model frame used
+#'@return a list of length 7 containing the coefficients of the model, residuals, fitted values, rank of the fitted model, the residual degrees of freedom, the model formula used, and the model frame used
 #'
 #'@examples
 #'linearRegression(dist~speed, cars)
@@ -99,10 +99,11 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
   model<-as.data.frame(X)
   model[[1]]<-y
   model<-model[,1:(num_nonint+1)]
+  names(model)<-c(y_symbolic, X_names[1:num_nonint])
 
   #Residual degrees of freedom
   residual_df<-length(y)-dim(X)[2]
 
-  return(list(coefficients=beta, residuals=resids, rank=rank, fitted.values=fitted_values, df.residual=residual_df, model=model))
+  return(list(coefficients=beta, residuals=resids, rank=rank, fitted.values=fitted_values, df.residual=residual_df, model=model, formula=formula(form)))
 
 }

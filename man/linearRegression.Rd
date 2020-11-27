@@ -14,7 +14,7 @@ linearRegression(form, dat = NULL, subs = NULL)
 \item{subs}{an optional vector specifying a subset of data to be used}
 }
 \value{
-a list of length 5 containing the coefficients of the model, residuals, fitted values, rank of the fitted model, the residual degrees of freedom, and the model frame used
+a list of length 7 containing the coefficients of the model, residuals, fitted values, rank of the fitted model, the residual degrees of freedom, the model formula used, and the model frame used
 }
 \description{
 Performs a linear regression analysis on the given formula
