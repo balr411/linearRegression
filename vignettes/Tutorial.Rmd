@@ -1,0 +1,38 @@
+---
+title: "Tutorial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(linearRegression)
+library(bench)
+```
+
+The linearRegression package described in this vignette is a package capable of performing a basic linear regression analysis. The function linearRegression is most similar to the function lm in the stats package, and the anova and summary functions perform almost the exact same tasks as the anova and summary functions in the stats and base packages respectively. Throughout this tutorial, we will work through examples including analyses done on simple linear regression models, multiple linear regression models, and multiple linear regression models containing interaction terms. We will compare the functions in the linearRegression package to those in the stats and base packages using the bench package as well as through the usage of the system.time function. We will begin with a simple linear regression model using the cars data set in R. This data set contains 50 data points on the speed of cars and the distances taken to stop, recorded in the 1920's. We will use the speed of the car as a predictor for the stopping time. To fit the model, we use the following code: 
+
+```{r}
+model_cars<-linearRegression(dist~speed, dat=cars)
+```
+
+Note that this is the same way to fit a model using the lm function in the stats package. To show correctness of the linearRegression function, we will also fit the model using the lm function as follows: 
+
+```{r}
+model_cars_lm<-lm(dist~speed, data=cars)
+```
+
+Now model_cars is a list length 7 containing the coefficients of the model, residuals, fitted values, rank of the fitted model, the residual degrees of freedom, the model formula used, and the model frame used. One thing of potential interest is to see the coefficients and their significance. This can be achieved through the usage of the summary function. Among other things, the summary function in the linearRegression package will return a data frame containing each of the coefficients, their degrees of freedom, their t-statistics as well as p-values. This can be seen by using the following code: 
+
+```{r}
+linearRegression::summary(model_cars)$coefficients
+```

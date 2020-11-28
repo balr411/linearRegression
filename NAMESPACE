@@ -2,4 +2,5 @@
 
 export(anova)
 export(linearRegression)
+export(summary)
 import(stats)
