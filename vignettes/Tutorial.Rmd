@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(linearRegression)
-library(bench)
+#library(bench)
 ```
 
 The linearRegression package described in this vignette is a package capable of performing a basic linear regression analysis. The function linearRegression is most similar to the function lm in the stats package, and the anova and summary functions perform almost the exact same tasks as the anova and summary functions in the stats and base packages respectively. Throughout this tutorial, we will work through examples including analyses done on simple linear regression models, multiple linear regression models, and multiple linear regression models containing interaction terms. We will compare the functions in the linearRegression package to those in the stats and base packages using the bench package as well as through the usage of the system.time function. We will begin with a simple linear regression model using the cars data set in R. This data set contains 50 data points on the speed of cars and the distances taken to stop, recorded in the 1920's. We will use the speed of the car as a predictor for the stopping time. To fit the model, we use the following code: 
@@ -116,9 +116,18 @@ fit_mlr_lm<-lm(mpg~cyl+disp+hp+wt, data=mtcars)
 base::summary(fit_mlr_lm)
 ```
 
-We can also include interaction terms in our model. There are two ways to do this. To include interaction between variables x and y, the term x:y should be included in form in the linearRegression call. linearRegression also supports input of terms separated by \*. For example, using form as y\~x1\*x2\*x3 is equivalent to using y\~x1 + x2 + x3 + x1:x2 + x1:x3 + x2:x3. To see this, let us consider the above model with all interaction terms involved: 
+We can also include interaction terms in our model. To include interaction between variables x and y, the term x:y should be included in form in the linearRegression call. To see this, let us consider the above model with some interaction terms involved: 
 
 ```{r}
-fit_mlr_int<-linearRegression::linearRegression(mpg~cyl*disp*hp*wt, dat=mtcars)
-#linearRegression::summary(fit_mlr_int)$coefficients
+fit_mlr_int<-linearRegression::linearRegression(mpg~cyl+disp+hp+wt+cyl+cyl:disp:hp, dat=mtcars)
+linearRegression::summary(fit_mlr_int)$coefficients
 ```
+
+Comparing to the same call in lm: 
+
+```{r}
+fit_mlr_int_lm<-lm(mpg~cyl+disp+hp+wt+cyl+cyl:disp:hp, data=mtcars)
+base::summary(fit_mlr_int_lm)
+```
+
+
