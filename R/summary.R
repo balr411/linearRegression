@@ -44,7 +44,6 @@ summary<-function(model){
       }
     }else{
       X[,(i+1)]<-get(X_names[i], envir=as.environment(model$model))
-      num_nonint<-num_nonint+1
     }
   }
 
