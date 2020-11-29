@@ -31,23 +31,7 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
     y<-get(y_symbolic)
   }
 
-  #Find independent variables to be used in model
-  X_names<-c()
-  for (i in 1:length(dep_vec)){
-    starred_terms<-unlist(strsplit(dep_vec[i], split="*", fixed=TRUE))
-    if (length(starred_terms)>1){
-      X_names<-c(X_names, starred_terms)
-      for (j in 1:(length(starred_terms)-1)){
-        for (k in (j+1):length(starred_terms)){
-          X_names<-c(X_names, paste(starred_terms[j], starred_terms[k], sep=":"))
-        }
-      }
-    }else{
-      X_names<-c(X_names, dep_vec[i])
-    }
-  }
-
-  X_names<-unique(gsub(" ", "", X_names))
+  X_names<-unique(gsub(" ", "", dep_vec))
 
   #Add independent variables to design matrix
   X<-matrix(nrow=length(y), ncol=length(X_names)+1)
@@ -57,7 +41,10 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
     for(i in 1:length(X_names)){
       int<-unlist(strsplit(X_names[i], split=":", fixed=TRUE))
       if (length(int)>1){
-        X[,(i+1)]<-get(int[1], envir=as.environment(dat))*get(int[2], envir=as.environment(dat))
+        X[,(i+1)]<-get(int[1], envir=as.environment(dat))
+        for(j in 2:length(int)){
+          X[,(i+1)]<-X[,(i+1)] * get(int[j], envir=as.environment(dat))
+        }
       }else{
         X[,(i+1)]<-get(X_names[i], envir=as.environment(dat))
         num_nonint<-num_nonint+1
