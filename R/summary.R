@@ -38,12 +38,12 @@ summary<-function(model){
   for(i in 1:length(X_names)){
     int<-unlist(strsplit(X_names[i], split=":", fixed=TRUE))
     if (length(int)>1){
-      X[,(i+1)]<-get(int[1], envir=as.environment(dat))
+      X[,(i+1)]<-get(int[1], envir=as.environment(model$model))
       for(j in 2:length(int)){
-        X[,(i+1)]<-X[,(i+1)] * get(int[j], envir=as.environment(dat))
+        X[,(i+1)]<-X[,(i+1)] * get(int[j], envir=as.environment(model$model))
       }
     }else{
-      X[,(i+1)]<-get(X_names[i], envir=as.environment(dat))
+      X[,(i+1)]<-get(X_names[i], envir=as.environment(model$model))
       num_nonint<-num_nonint+1
     }
   }
