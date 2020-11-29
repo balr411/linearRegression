@@ -36,3 +36,89 @@ Now model_cars is a list length 7 containing the coefficients of the model, resi
 ```{r}
 linearRegression::summary(model_cars)$coefficients
 ```
+
+From this we can see that the p-value for testing the null hypothesis of no association between the speed of the car and the stopping time is very low and would be significant at any reasonable level of significance. By using the summary function in the base package on our model model_cars_lm, we can see the correctness of our model: 
+
+```{r}
+base::summary(model_cars_lm)
+```
+
+Equivalently, we could use the anova function to do the same test. The anova function in linearRegression takes one model from the output of a linearRegression call and outputs a data frame containing the degrees of freedom, sum of squares, mean sum of squares, F-statistic and p-value for all predictors as well as the error degrees of freedom, error sum of squares and mean sqaure error. 
+
+```{r}
+linearRegression::anova(model_cars)
+```
+
+Similarly, we could use the anova function in stats: 
+
+```{r} 
+stats::anova(model_cars_lm)
+```
+
+We get the same p-value in all four calls. Furthermore, the function linearRegression gives output useful in other areas of the analysis such as model diagnostics. Both the residuals and the fitted values are returned from a call to linearRegression, hence we can assess LINE (linearity, independence, normality, equal variances) assumptions using plotting tools in base R. Equivalently, a more advanced graphing package such as ggplot2 could be used. For the sake of simplicity we use base R in this tutorial. We can assess linearity and constant variance using a plot of the residuals vs. the fitted values, independence by a plot of the residuals vs. their index, and normality with a histogram of the residuals. These are as follows: 
+
+```{r}
+resids<-model_cars$residuals
+fitted_values<-model_cars$fitted.values
+plot(fitted_values, resids, main="Residuals vs. Fitted Values", xlab="Fitted Values", ylab="Residuals")
+plot(1:length(resids), resids, main="Residuals vs. Index", xlab="Index", ylab="Residuals")
+hist(resids, main="Histogram of Residuals", xlab="Residuals")
+```
+
+We can see that the residuals are slightly right skewed, the observations are likely independent, and variance may increase as the fitted values increase. Continuing on, we will further examine the summary function in linearRegression. We have seen already that the summary function can be used to obtain p-values for each of the coefficients. It can also be used to assess model fit. The summary function also outputs R squared, adjusted R squared (useful when there are multiple predictors), and the model F-statistic and p-value. The model F-statistic and p-value can be used to test the null hypothesis that all regression coefficients are 0. For our cars model, these are as follows: 
+
+```{r}
+summary_model_cars<-linearRegression::summary(model_cars)
+summary_model_cars$R.squared
+summary_model_cars$adj.R.squared
+summary_model_cars$F.stat
+summary_model_cars$model.p.value
+```
+
+Comparing this output to the output given by the summary function in base R above, we see that we get the same answer. Finally, we can use the output from the linearRegression function for prediction. We can then compare it to prediction done by the model fit using lm. 
+
+```{r}
+b0_cars<-model_cars$coefficients[1]
+b1_cars<-model_cars$coefficients[2]
+model_predict<-function(X){
+  return(b0_cars+b1_cars*X)
+}
+
+b0_cars_lm<-model_cars_lm$coefficients[1]
+b1_cars_lm<-model_cars_lm$coefficients[2]
+model_predict_lm<-function(X){
+  return(b0_cars_lm+b1_cars_lm*X)
+}
+
+X<-rnorm(100)
+
+all.equal(model_predict(X), model_predict_lm(X))
+```
+
+There are various other output items from the functions linearRegression and summary that may be of interest to package users. Both functions return the formula used in the model and can be accessed in the return list under the name formula. linearRegression returns the rank of the design matrix and the data frame containing the model data under the names rank and model. summary also returns the model residuals and the residual standard error under the names residuals and residual.se. 
+
+We will now move on to talk about multiple linear regression and multiple linear regression with interaction terms. To do this, we can consider the mtcars data set in R. We will use the number of cylinders, displacement, gross horsepower, and weight as predictors for the miles per gallon. 
+
+```{r}
+fit_mlr<-linearRegression::linearRegression(mpg~cyl+disp+hp+wt, dat=mtcars)
+```
+
+All of the functionality that has been previously described for simple linear regression is also available for multiple linear regression. For example, we can look at the estimated regression coefficients as well as their t-statistics using the summary function. 
+
+```{r}
+linearRegression::summary(fit_mlr)$coefficients
+```
+
+As we can see from fitting the same model using the lm function, we get the same results. 
+
+```{r}
+fit_mlr_lm<-lm(mpg~cyl+disp+hp+wt, data=mtcars)
+base::summary(fit_mlr_lm)
+```
+
+We can also include interaction terms in our model. There are two ways to do this. To include interaction between variables x and y, the term x:y should be included in form in the linearRegression call. linearRegression also supports input of terms separated by \*. For example, using form as y\~x1\*x2\*x3 is equivalent to using y\~x1 + x2 + x3 + x1:x2 + x1:x3 + x2:x3. To see this, let us consider the above model with all interaction terms involved: 
+
+```{r}
+fit_mlr_int<-linearRegression::linearRegression(mpg~cyl*disp*hp*wt, dat=mtcars)
+#linearRegression::summary(fit_mlr_int)$coefficients
+```

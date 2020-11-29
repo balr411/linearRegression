@@ -104,6 +104,9 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
   #Residual degrees of freedom
   residual_df<-length(y)-dim(X)[2]
 
-  return(list(coefficients=beta, residuals=resids, rank=rank, fitted.values=fitted_values, df.residual=residual_df, model=model, formula=formula(form)))
+  #Formula called
+  form_to_return<-paste(y_character, "~", paste(X_names, collapse="+"), sep="")
+
+  return(list(coefficients=beta, residuals=resids, rank=rank, fitted.values=fitted_values, df.residual=residual_df, model=model, formula=formula(form_to_return)))
 
 }

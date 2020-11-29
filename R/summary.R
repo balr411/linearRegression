@@ -56,6 +56,7 @@ summary<-function(model){
 
   #Data frame of coefficients, standard errors, t-statistics, p-values
   df<-data.frame("Estimate"=coefic, "Std.Error"=standard_errors, "t.value"=t_stat, "p.value"=p_values)
+  row.names(df)<-c("(Intercept)", X_names)
 
   #R-squared
   SSE<-sum(resids^2)
