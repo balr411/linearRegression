@@ -5,7 +5,8 @@ Authors@R:
     person(given = "Brady",
            family = "Ryan",
            role = c("aut", "cre"),
-           email = "balr@umich.edu"
+           email = "balr@umich.edu",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: The linearRegression package is able to fit a linear regression model with a single outcome variable and multiple independent variables including interaction terms. It is able to return regression coefficients, fitted values, and residuals among other things which are described in detail in the corresponding help files. The anova function can compute F-statistics and p-values for each of the predictors included in the model. The summary function computes t-statistics and p-values for each of the predictors, as well as model F-statistic and p-value, R squared, adjusted R squared, and more, which is all described further in the help pages.
 License: GPL-3
 Encoding: UTF-8
