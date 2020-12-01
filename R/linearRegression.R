@@ -54,7 +54,10 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
     for(i in 1:length(X_names)){
       int<-unlist(strsplit(X_names[i], split=":", fixed=TRUE))
       if(length(int)>1){
-        X[,(i+1)]<-get(int[1])*get(int[2])
+        X[,(i+1)]<-get(int[1])
+        for(j in 2:length(int)){
+          X[,(i+1)]<-X[,(i+1)] * get(int[j])
+        }
       }else{
         X[,(i+1)]<-get(X_names[i])
         num_nonint<-num_nonint+1
