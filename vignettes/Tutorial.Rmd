@@ -119,15 +119,87 @@ base::summary(fit_mlr_lm)
 We can also include interaction terms in our model. To include interaction between variables x and y, the term x:y should be included in form in the linearRegression call. To see this, let us consider the above model with some interaction terms involved: 
 
 ```{r}
-fit_mlr_int<-linearRegression::linearRegression(mpg~cyl+disp+hp+wt+cyl+cyl:disp:hp, dat=mtcars)
+fit_mlr_int<-linearRegression::linearRegression(mpg~cyl+disp+hp+wt+cyl+cyl:disp+disp:wt+cyl:disp:hp, dat=mtcars)
 linearRegression::summary(fit_mlr_int)$coefficients
 ```
 
 Comparing to the same call in lm: 
 
 ```{r}
-fit_mlr_int_lm<-lm(mpg~cyl+disp+hp+wt+cyl+cyl:disp:hp, data=mtcars)
+fit_mlr_int_lm<-lm(mpg~cyl+disp+hp+wt+cyl+cyl:disp+disp:wt+cyl:disp:hp, data=mtcars)
 base::summary(fit_mlr_int_lm)
 ```
 
+Again we can see the correctness of the function. Before moving on to benchmarking and system.time checks, it should be noted that the linearRegression function cannot take a factor as input, and no other formula formats are accecpted besides those written in this tutorial. If a factor is needed in your analysis, you must create your own dummy variables to include in the call to linearRegression. 
 
+We will now move on to benchmarking the function linearRegression against lm. We will first do this using the bench package. We will use the multiple linear regression model fit previously to do this. 
+
+```{r} 
+bench::mark(linearRegression::linearRegression(mpg~cyl+disp+hp+wt, dat=mtcars), lm(mpg~cyl+disp+hp+wt, dat=mtcars), check=FALSE)[,3]
+```
+
+This shows that the median run time for linearRegression is about one third as fast as lm when we use this mtcars data set. This is a small data set, and linearRegression perfroms slightly worse as the input size increases compared to lm. 
+
+```{r}
+y<-rnorm(1000)
+x<-rnorm(1000)
+
+bench::mark(linearRegression::linearRegression(y~x), lm(y~x), check=FALSE)[,3]
+```
+
+Here linearRegression is about 20 times slower than lm. This is however not terrible, as lm is one of the most used functions in R and must be optimized accordingly. We can also benchmark anova and summary against their base/stats package counterparts. 
+
+```{r}
+fit_bm_linReg<-linearRegression::linearRegression(y~x)
+fit_bm_lm<-lm(y~x)
+
+bench::mark(linearRegression::anova(fit_bm_linReg), stats::anova(fit_bm_lm), check=FALSE)[,3]
+
+bench::mark(linearRegression::summary(fit_bm_linReg), base::summary(fit_bm_lm), check=FALSE)[,3]
+
+```
+
+In this case, our anova function actually performs marginally better than the one included in stats, while our summary function is approximately 3 times slower. Note that the comparisons done against lm and summary are slightly erroneous. The lm function from stats and summary from base return more information than our implementations, and hence do more work. The true benchmarking between our function and lm and stats is likely slightly slower than shown here. Since the format that we return our results is different than lm, we had to set check=FALSE above. To see correctness of our functions more clearly, we set up the following loop. At each iteration, the for loop randomly samples data from the normal distribution and fits linear regression models based on it. We use all.equal to compare the results from linearRegression to the results from lm. 
+
+```{r}
+for(i in 1:10){
+  y<-rnorm(100)
+  x1<-rnorm(100)
+  x2<-rnorm(100)
+  
+  fit_linReg<-linearRegression::linearRegression(y~x1+x2)
+  fit_lm<-lm(y~x1+x2)
+
+  check1<-all.equal(as.numeric(fit_linReg$coefficients), as.numeric(fit_lm$coefficients))
+  check2<-all.equal(as.numeric(fit_linReg$residuals), as.numeric(fit_lm$residuals))
+  check3<-fit_linReg$rank==fit_lm$rank
+  check4<-all.equal(as.numeric(fit_linReg$fitted.values), as.numeric(fit_lm$fitted.values))
+  check5<-fit_linReg$df.residual==fit_lm$df.residual 
+  
+  anova_fit_linReg<-linearRegression::anova(fit_linReg)
+  anova_fit_lm<-stats::anova(fit_lm)
+  
+  check6<-all.equal(as.numeric(anova_fit_linReg[[1]]), as.numeric(anova_fit_lm[[1]]))
+  check7<-all.equal(as.numeric(anova_fit_linReg[[2]]), as.numeric(anova_fit_lm[[2]]))
+  check8<-all.equal(as.numeric(anova_fit_linReg[[3]][1:(length(anova_fit_linReg[[3]])-2)]), as.numeric(anova_fit_lm[[3]][1:(length(anova_fit_lm[[3]])-2)]))
+  check9<-all.equal(as.numeric(anova_fit_linReg[[4]][1:(length(anova_fit_linReg[[4]])-2)]), as.numeric(anova_fit_lm[[4]][1:(length(anova_fit_lm[[4]])-2)]))
+  
+  summary_fit_linReg<-linearRegression::summary(fit_linReg)
+  summary_fit_lm<-base::summary(fit_lm)
+  
+  
+  check10<-all.equal(summary_fit_linReg$R.squared,summary_fit_lm$r.squared)
+  check11<-all.equal(summary_fit_linReg$adj.R.squared,summary_fit_lm$adj.r.squared)
+  check12<-all.equal(as.vector(summary_fit_linReg$coefficients[,2]), as.vector(summary_fit_lm$coefficients[,2]))
+  check13<-all.equal(as.vector(summary_fit_linReg$coefficients[,3]), as.vector(summary_fit_lm$coefficients[,3]))
+  check14<-all.equal(as.vector(summary_fit_linReg$coefficients[,4]), as.vector(summary_fit_lm$coefficients[,4]))
+  check15<-all.equal(summary_fit_linReg$F.stat, as.numeric(summary_fit_lm$fstatistic[1]))
+  check16<-all.equal(summary_fit_linReg$df, as.vector(summary_fit_lm$fstatistic[2:3]))
+  
+  if(check1+check2+check3+check4+check5+check6+check7+check8+check9+check10+check11+check12+check13+check14+check15+check16<16){
+    print("Not all equal")
+  }
+}
+```
+
+The above checks all parts of the implemented functions for correctness by checking against the output of the base/stats package lm, anova, and summary functions. "Not all equal" was not printed once, meaning our functions were correct on each run. 

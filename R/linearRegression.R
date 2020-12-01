@@ -70,7 +70,7 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
 
   #Find regression coefficients
   beta<-solve((t(X)%*%X))%*%t(X)%*%as.matrix(y)
-  names(beta)<-c("(intercept)", X_names)
+  names(beta)<-c("(Intercept)", X_names)
 
   #Get residuals
   H<-X%*%solve((t(X)%*%X))%*%t(X)
