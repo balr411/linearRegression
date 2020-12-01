@@ -17,5 +17,6 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    bench
+    bench,
+    covr
 VignetteBuilder: knitr
