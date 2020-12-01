@@ -162,7 +162,7 @@ bench::mark(linearRegression::summary(fit_bm_linReg), base::summary(fit_bm_lm), 
 In this case, our anova function actually performs marginally better than the one included in stats, while our summary function is approximately 3 times slower. Note that the comparisons done against lm and summary are slightly erroneous. The lm function from stats and summary from base return more information than our implementations, and hence do more work. The true benchmarking between our function and lm and stats is likely slightly slower than shown here. Since the format that we return our results is different than lm, we had to set check=FALSE above. To see correctness of our functions more clearly, we set up the following loop. At each iteration, the for loop randomly samples data from the normal distribution and fits linear regression models based on it. We use all.equal to compare the results from linearRegression to the results from lm. 
 
 ```{r}
-for(i in 1:10){
+for(i in 1:100){
   y<-rnorm(100)
   x1<-rnorm(100)
   x2<-rnorm(100)
@@ -172,9 +172,9 @@ for(i in 1:10){
 
   check1<-all.equal(as.numeric(fit_linReg$coefficients), as.numeric(fit_lm$coefficients))
   check2<-all.equal(as.numeric(fit_linReg$residuals), as.numeric(fit_lm$residuals))
-  check3<-fit_linReg$rank==fit_lm$rank
+  check3<-all.equal(fit_linReg$rank,fit_lm$rank)
   check4<-all.equal(as.numeric(fit_linReg$fitted.values), as.numeric(fit_lm$fitted.values))
-  check5<-fit_linReg$df.residual==fit_lm$df.residual 
+  check5<-all.equal(fit_linReg$df.residual,fit_lm$df.residual) 
   
   anova_fit_linReg<-linearRegression::anova(fit_linReg)
   anova_fit_lm<-stats::anova(fit_lm)
@@ -202,4 +202,4 @@ for(i in 1:10){
 }
 ```
 
-The above checks all parts of the implemented functions for correctness by checking against the output of the base/stats package lm, anova, and summary functions. "Not all equal" was not printed once, meaning our functions were correct on each run. 
+The above checks all parts of the implemented functions for correctness by checking against the output of the base/stats package lm, anova, and summary functions. "Not all equal" was not printed once, meaning our functions were correct on each run. These same 16 checks were included during unit testing as can be found in the tests directory. 
