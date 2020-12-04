@@ -22,5 +22,6 @@ Performs a linear regression analysis on the given formula
 \examples{
 linearRegression(dist~speed, cars)
 y<-rnorm(100); x<-rnorm(100); linearRegression(y~x, subs=1:50)
+linearRegression(mpg~cyl+disp+hp+wt+cyl:disp+disp:wt+cyl:disp:hp, dat=mtcars)
 
 }

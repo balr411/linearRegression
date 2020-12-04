@@ -8,6 +8,8 @@
 #'
 #'@examples
 #'fit<-linearRegression(dist~speed, cars); anova(fit)
+#'fit2<-linearRegression(mpg~cyl+disp+hp+wt+cyl:disp+disp:wt+cyl:disp:hp, dat=mtcars); anova(fit2)
+#'y<-rnorm(100); x<-rnorm(100); fit3<-linearRegression(y~x, subs=1:50); anova(fit3)
 #'
 #'@import stats
 #'

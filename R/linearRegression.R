@@ -13,6 +13,7 @@
 #'@examples
 #'linearRegression(dist~speed, cars)
 #'y<-rnorm(100); x<-rnorm(100); linearRegression(y~x, subs=1:50)
+#'linearRegression(mpg~cyl+disp+hp+wt+cyl:disp+disp:wt+cyl:disp:hp, dat=mtcars)
 #'
 #'@import stats
 #'
@@ -47,7 +48,6 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
         }
       }else{
         X[,(i+1)]<-get(X_names[i], envir=as.environment(dat))
-        num_nonint<-num_nonint+1
       }
     }
   }else{
@@ -60,7 +60,6 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
         }
       }else{
         X[,(i+1)]<-get(X_names[i])
-        num_nonint<-num_nonint+1
       }
     }
   }
@@ -86,10 +85,25 @@ linearRegression<-function(form, dat=NULL, subs=NULL){
   fitted_values<-H%*%as.matrix(y)
 
   #Model frame
-  model<-as.data.frame(X)
-  model[[1]]<-y
-  model<-model[,1:(num_nonint+1)]
-  names(model)<-c(y_symbolic, X_names[1:num_nonint])
+  model<-data.frame(y)
+  X_names_model<-unique(unlist(sapply(X_names, function(x)strsplit(x, split=":")))) #vector with names of all independent variables used in model
+  if(!is.null(dat)){
+    for(i in 1:length(X_names_model)){
+      model<-cbind(model, get(X_names_model[i], envir=as.environment(dat)))
+    }
+  }else{
+    for(i in 1:length(X_names_model)){
+      model<-cbind(model, get(X_names_model[i]))
+    }
+  }
+
+  names(model)<-c(y_symbolic, X_names_model)
+
+  if(!is.null(subs)){
+    model<-model[subs,]
+  }
+
+
 
   #Residual degrees of freedom
   residual_df<-length(y)-dim(X)[2]

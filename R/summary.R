@@ -9,6 +9,8 @@
 #'
 #'@examples
 #'fit<-linearRegression(dist~speed, cars); summary(fit)
+#'fit2<-linearRegression(mpg~cyl+disp+hp+wt+cyl:disp+disp:wt, dat=mtcars); summary(fit2)$coefficients
+#'y<-rnorm(100); x<-rnorm(100); fit3<-linearRegression(y~x, subs=1:50); summary(fit3)
 #'
 #'@import stats
 #'

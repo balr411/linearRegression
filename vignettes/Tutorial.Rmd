@@ -119,14 +119,14 @@ base::summary(fit_mlr_lm)
 We can also include interaction terms in our model. To include interaction between variables x and y, the term x:y should be included in form in the linearRegression call. To see this, let us consider the above model with some interaction terms involved: 
 
 ```{r}
-fit_mlr_int<-linearRegression::linearRegression(mpg~cyl+disp+hp+wt+cyl+cyl:disp+disp:wt+cyl:disp:hp, dat=mtcars)
+fit_mlr_int<-linearRegression::linearRegression(mpg~cyl+disp+hp+wt+cyl:disp+disp:wt+cyl:disp:hp, dat=mtcars)
 linearRegression::summary(fit_mlr_int)$coefficients
 ```
 
 Comparing to the same call in lm: 
 
 ```{r}
-fit_mlr_int_lm<-lm(mpg~cyl+disp+hp+wt+cyl+cyl:disp+disp:wt+cyl:disp:hp, data=mtcars)
+fit_mlr_int_lm<-lm(mpg~cyl+disp+hp+wt+cyl:disp+disp:wt+cyl:disp:hp, data=mtcars)
 base::summary(fit_mlr_int_lm)
 ```
 
@@ -202,4 +202,49 @@ for(i in 1:100){
 }
 ```
 
-The above checks all parts of the implemented functions for correctness by checking against the output of the base/stats package lm, anova, and summary functions. "Not all equal" was not printed once, meaning our functions were correct on each run. These same 16 checks were included during unit testing as can be found in the tests directory. 
+The above checks all parts of the implemented functions for correctness by checking against the output of the base/stats package lm, anova, and summary functions. "Not all equal" was not printed once, meaning our functions were correct on each run. The following for loop does the same checks as the previous for loop, but this time we include a model with interaction. 
+
+```{r} 
+for(i in 1:100){
+  y<-rnorm(100)
+  x1<-rnorm(100)
+  x2<-rnorm(100)
+  x3<-rnorm(100)
+  
+  fit_linReg<-linearRegression::linearRegression(y~x1+x2+x3+x1:x2:x3)
+  fit_lm<-lm(y~x1+x2+x3+x1:x2:x3)
+
+  check1<-all.equal(as.numeric(fit_linReg$coefficients), as.numeric(fit_lm$coefficients))
+  check2<-all.equal(as.numeric(fit_linReg$residuals), as.numeric(fit_lm$residuals))
+  check3<-all.equal(fit_linReg$rank,fit_lm$rank)
+  check4<-all.equal(as.numeric(fit_linReg$fitted.values), as.numeric(fit_lm$fitted.values))
+  check5<-all.equal(fit_linReg$df.residual,fit_lm$df.residual) 
+  
+  anova_fit_linReg<-linearRegression::anova(fit_linReg)
+  anova_fit_lm<-stats::anova(fit_lm)
+  
+  check6<-all.equal(as.numeric(anova_fit_linReg[[1]]), as.numeric(anova_fit_lm[[1]]))
+  check7<-all.equal(as.numeric(anova_fit_linReg[[2]]), as.numeric(anova_fit_lm[[2]]))
+  check8<-all.equal(as.numeric(anova_fit_linReg[[3]][1:(length(anova_fit_linReg[[3]])-2)]), as.numeric(anova_fit_lm[[3]][1:(length(anova_fit_lm[[3]])-2)]))
+  check9<-all.equal(as.numeric(anova_fit_linReg[[4]][1:(length(anova_fit_linReg[[4]])-2)]), as.numeric(anova_fit_lm[[4]][1:(length(anova_fit_lm[[4]])-2)]))
+  
+  summary_fit_linReg<-linearRegression::summary(fit_linReg)
+  summary_fit_lm<-base::summary(fit_lm)
+  
+  
+  check10<-all.equal(summary_fit_linReg$R.squared,summary_fit_lm$r.squared)
+  check11<-all.equal(summary_fit_linReg$adj.R.squared,summary_fit_lm$adj.r.squared)
+  check12<-all.equal(as.vector(summary_fit_linReg$coefficients[,2]), as.vector(summary_fit_lm$coefficients[,2]))
+  check13<-all.equal(as.vector(summary_fit_linReg$coefficients[,3]), as.vector(summary_fit_lm$coefficients[,3]))
+  check14<-all.equal(as.vector(summary_fit_linReg$coefficients[,4]), as.vector(summary_fit_lm$coefficients[,4]))
+  check15<-all.equal(summary_fit_linReg$F.stat, as.numeric(summary_fit_lm$fstatistic[1]))
+  check16<-all.equal(summary_fit_linReg$df, as.vector(summary_fit_lm$fstatistic[2:3]))
+  
+  if(check1+check2+check3+check4+check5+check6+check7+check8+check9+check10+check11+check12+check13+check14+check15+check16<16){
+    print("Not all equal")
+  }
+}
+
+```
+
+Again, "Not all equal" was not printed, hence each output from the linearRegression package was correct. These same 16 checks and more were included during unit testing as can be found in the tests directory. As mentioned in the README.md, the unit tets were always correct and they covered 100% of the code in the package. We hence can conclude this tutorial by stating that the linearRegression package is a correct and efficient package capable of performing a basic linear regression analysis which can be used for inference and prediction. 
